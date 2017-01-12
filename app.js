@@ -38,84 +38,30 @@ function processParameter(parm) {
     var retVal;
     var unixVal;
     var naturalDate;
+    var dateValue;
     
     // if the parameter is NaN then assume it's not a unix timestamp
     if (isNaN(parm)) {
-        var dateString = parm.replace(",", "");
-        dateString = dateString.replace(".", "-");
-        
-        // need to check the various format a non-unix date could be coming in as and return the unix and natural language equivalents
-        var arr = checkDate(dateString);
-        
-        // if the returning array has an invalid value then set the unix and natural language dates to null
-        if (arr[0] === "Invalid") {
-            unixVal = null;
-            naturalDate = null;
-        } else {
-            unixVal = arr[1];
-            naturalDate = arr[0];
-        }
+      dateValue = moment(parm, "MMMM D, YYYY");
     // code to deal with unix timestamp;
     } else {
-        
-      var newDate = moment.unix(parm);
-      unixVal = parm;
-      naturalDate = moment(newDate).format('MMMM D, YYYY');
+      dateValue = moment(parm, "X");
+      console.log(dateValue);
     }
     
     // create the json object to return;
+    if (dateValue.isValid()) {
     retVal = {
-                "unix": unixVal,
-                "natural language": naturalDate
+                "unix": dateValue.format("X"),
+                "natural language": dateValue.format("MMMM D, YYYY")
              }
-    
-    return retVal;
-    
-}
-
-function convertMonth(parm) {
-    var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October",  "November", "December"];
-    
-    return months[parm];
-    
-}
-
-function checkDate(str) {
-    var validDate = true;
-    var arrRet = [];
-    
-    // hard code the various formats.  there must be a better way to do this;
-    if (!moment(str, "MMM DD YYYY", true).isValid()) {
-        if (!moment(str, "MMMM DD YYYY", true).isValid()) {
-            if (!moment(str, "MM-DD-YYYY", true).isValid()) {
-                if(!moment(str, "MM-DD-YY", true).isValid()) {
-                    if (!moment(str, "M-D-YY", true).isValid()) {
-                        if (!moment(str, "M-D-YYYY", true).isValid()) {
-                            if (!moment(str, "M-DD-YY", true).isValid()) {
-                                if (!moment(str, "MMMM D YYYY", true).isValid()) {
-                                  if (!moment(str, "MMMM D YY", true).isValid()) {
-                                      if (!moment(str, "MMM D YYYY", true).isValid()) {
-                                          if (!moment(str, "MMM D YY", true).isValid()) {
-                                              validDate = false;    
-                                          }
-                                      }
-                                  }    
-                                }
-                                
-                            }
-                        }
-                    }
-                }
-            }
+    } else {
+        retVal = {
+                    "unix": null,
+                    "natural language": null
         }
     }
     
-    if (!validDate) {
-        return arrRet.push("Invalid");
-        
-    } else {
-        arrRet.push(moment(str).format("MMMM DD, YYYY"));
-        arrRet.push(moment(str).format("X"));
-        return arrRet;
-    }
+    return retVal;
+    
 }
